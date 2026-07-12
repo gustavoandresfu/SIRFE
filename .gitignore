@@ -1,0 +1,30 @@
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.tox/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# SIRFE Output Files (Opcional: quitar de aquí si quieres subirlos a GitHub)
+representacion_intermedia_semantica.json
+clusters_ir.json
+especificacion_funcional.json
+reporte_validacion_tesis.json
+
+# AST Cache Files
+ast_security.json
+ast_user.json
+
+# Legacy codebases (Ignorar contenido pero conservar la estructura de carpetas)
+legacy/*
+!legacy/.gitkeep

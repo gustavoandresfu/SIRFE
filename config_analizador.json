@@ -1,0 +1,12 @@
+{
+    "active_profile": "legacy",
+    "profiles": {
+        "legacy": {
+            "mutable_calls": ["write", "create", "delete", "update", "save"],
+            "signal_calls": ["send", "trigger", "emit", "rpc"],
+            "identity_contexts": ["user", "group", "password", "session", "login", "auth"],
+            "storage_contexts": ["table", "db", "mmap", "cache", "pool"],
+            "ui_contexts": ["menu", "view", "interface", "preference", "avatar"]
+        }
+    }
+}

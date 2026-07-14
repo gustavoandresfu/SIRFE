@@ -1,50 +1,7 @@
 import json
+import os
 from typing import List
 from modelos import Cluster, FunctionalSpecification, FunctionalCapability, GherkinScenario, TechnicalSupport
-
-# Definición de Capacidades de Negocio
-BUSINESS_CAPABILITIES = {
-    0: {
-        "id": "UX-001",
-        "titulo": "Personalización y Experiencia del Usuario",
-        "historia": "Como usuario, quiero que el sistema adapte la interfaz y mis preferencias para trabajar de forma eficiente.",
-        "objetivos": [
-            "Adaptar el idioma y la dirección de la interfaz según el perfil",
-            "Mantener la persistencia de las preferencias de visualización",
-            "Personalizar el acceso a menús y funciones rápidas"
-        ]
-    },
-    1: {
-        "id": "DATA-001",
-        "titulo": "Gobierno y Ciclo de Vida de los Datos",
-        "historia": "Como administrador de datos, quiero asegurar que la información se cree, actualice y elimine bajo estrictas reglas de integridad.",
-        "objetivos": [
-            "Garantizar la consistencia atómica en la creación y modificación de registros",
-            "Asegurar la trazabilidad total de los cambios (Auditoría)",
-            "Gestionar la sincronización del modelo de datos con el almacenamiento"
-        ]
-    },
-    2: {
-        "id": "SEC-001",
-        "titulo": "Control de Acceso y Gestión de Sesiones",
-        "historia": "Como oficial de seguridad, quiero controlar quién y desde dónde se accede al sistema para prevenir intrusiones.",
-        "objetivos": [
-            "Validar las opciones de inicio de sesión (IP, dispositivos, cookies)",
-            "Controlar el umbral de intentos fallidos para mitigar ataques",
-            "Gestionar la vigencia y renovación de los tokens de acceso"
-        ]
-    },
-    3: {
-        "id": "SEC-002",
-        "titulo": "Seguridad Criptográfica de la Identidad",
-        "historia": "Como sistema seguro, quiero que la información sensible sea irreversible y protegida ante ingeniería inversa.",
-        "objetivos": [
-            "Transformar credenciales en huellas digitales seguras (Hashing)",
-            "Validar la integridad de las claves sin exponer su contenido original",
-            "Aplicar políticas de retardo para dificultar ataques automatizados"
-        ]
-    }
-}
 
 def generar_especificacion(
     clusters: List[Cluster], 
@@ -55,35 +12,101 @@ def generar_especificacion(
     capacidades_funcionales = []
     
     for cluster in clusters:
-        cluster_id = cluster.id
-        cap = BUSINESS_CAPABILITIES.get(cluster_id)
-        
-        if not cap:
+        if not cluster.units:
             continue
+            
+        cluster_id = cluster.id
         
-        # Enriquecemos la capacidad con los datos del cluster
-        roles = list(set(m.ir.role for m in cluster.methods))
-        contexts = list(set(m.ir.context for m in cluster.methods))
-        metodos_sustento = [f"{m.class_name}.{m.method}" for m in cluster.methods]
+        # 1. Agregación de características semánticas del cluster
+        preconditions = set()
+        actions = set()
+        postconditions = set()
+        exceptions = set()
+        inputs = set()
+        outputs = set()
+        domains = set()
+        roles = set()
         
-        escenario = GherkinScenario(
-            dado=f"Que el sistema requiere {cap['titulo'].lower()} con políticas de {', '.join(roles).lower()}",
-            cuando=f"Se procesan solicitudes en el dominio de {', '.join(contexts).lower()}",
-            entonces=cap["objetivos"],
-            y="Garantizar la resiliencia ante estados inconsistentes"
+        for u in cluster.units:
+            preconditions.update(u.preconditions)
+            for a_entry in u.actions:
+                actions.add(a_entry["action"])
+            postconditions.update(u.postconditions)
+            exceptions.update(u.exceptions)
+            inputs.update(u.inputs)
+            outputs.update(u.outputs)
+            domains.add(u.domain)
+            for r_entry in u.roles:
+                roles.add(r_entry["role"])
+
+        # Convertir a listas ordenadas para estabilidad en la generación
+        preconditions = sorted(list(preconditions))
+        actions = sorted(list(actions))
+        postconditions = sorted(list(postconditions))
+        exceptions = sorted(list(exceptions))
+        inputs = sorted(list(inputs))
+        outputs = sorted(list(outputs))
+        domains = sorted(list(domains))
+        roles = sorted(list(roles))
+
+        # Determinar el dominio funcional predominante
+        domain_str = domains[0] if domains else "GENERIC"
+        
+        # 2. Generación dinámica de la capacidad de negocio
+        id_cap = f"CAP-{cluster_id:03d}"
+        titulo_cap = f"Capacidad Funcional en Dominio {domain_str} ({', '.join(roles)})"
+        
+        historia = (
+            f"Como componente de negocio, quiero ejecutar las acciones ({', '.join(actions)}) "
+            f"en el dominio de {domain_str} para procesar las entradas ({', '.join(inputs)}) "
+            f"y retornar ({', '.join(outputs)}) garantizando las políticas semánticas."
         )
+
+        # 3. Construcción del Escenario Gherkin Dinámico
+        dado_str = "Que el sistema está inicializado en el dominio " + domain_str
+        if preconditions:
+            dado_str += " y se validan las precondiciones: " + ", ".join(preconditions)
+            
+        cuando_str = "Se ejecutan las acciones de " + ", ".join(actions)
+        if inputs:
+            cuando_str += " con los parámetros de entrada: " + ", ".join(inputs)
+            
+        entonces_list = []
+        if postconditions:
+            for post in postconditions:
+                entonces_list.append(f"Se garantiza que: {post.lower()}")
+        else:
+            entonces_list.append("Se ejecuta el procesamiento lógico sin inconsistencias de estado")
+            
+        y_str = "Garantizar la estabilidad transaccional"
+        if exceptions:
+            y_str += " y mitigar la excepción " + ", ".join(exceptions)
+
+        escenario = GherkinScenario(
+            dado=dado_str,
+            cuando=cuando_str,
+            entonces=entonces_list,
+            y=y_str
+        )
+
+        # 4. Sustento Técnico (Trazabilidad)
+        unidades_sustento = [
+            f"{u.traceability.class_name + '.' if u.traceability.class_name else ''}{u.traceability.name} "
+            f"(L{u.traceability.start_line}-{u.traceability.end_line} en {os.path.basename(u.traceability.file_path)})"
+            for u in cluster.units
+        ]
         
         sustento = TechnicalSupport(
-            cantidad_metodos=len(metodos_sustento),
-            metodos=metodos_sustento
+            cantidad_unidades=len(unidades_sustento),
+            unidades=unidades_sustento
         )
-        
+
         func_cap = FunctionalCapability(
-            id=cap["id"],
-            titulo=cap["titulo"],
-            historia_usuario=cap["historia"],
+            id=id_cap,
+            titulo=titulo_cap,
+            historia_usuario=historia,
             escenario_gherkin_sintetizado=escenario,
-            sustento_tecnico=sustro if (sustro := sustento) else sustento
+            sustento_tecnico=sustento
         )
         
         capacidades_funcionales.append(func_cap)
@@ -95,6 +118,7 @@ def generar_especificacion(
     )
 
 if __name__ == "__main__":
+    import os
     try:
         with open("clusters_ir.json", "r", encoding="utf-8") as f:
             clusters_data = json.load(f)
@@ -108,4 +132,4 @@ if __name__ == "__main__":
     with open("especificacion_funcional.json", "w", encoding="utf-8") as g:
         json.dump(especificacion.to_dict(), g, indent=4, ensure_ascii=False)
                 
-    print("Especificación FUNCIONAL en JSON generada exitosamente.")
+    print("Especificación FUNCIONAL dinámica en JSON generada exitosamente.")

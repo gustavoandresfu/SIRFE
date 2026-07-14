@@ -79,13 +79,17 @@ def main():
     print("REPORTE CONSOLIDADO DE VALIDACIÓN (SIR-FE)")
     print("=" * 50)
     resumen = reporte["resumen_estadistico"]
-    print(f"Total métodos analizados : {resumen['total_metodos_analizados']}")
-    print(f"Métodos únicos mapeados  : {resumen['metodos_unicos_mapeados']}")
-    print(f"Cobertura Total          : {resumen['indice_cobertura_total']}")
-    print(f"Cobertura Crítica (MUT)  : {resumen['indice_cobertura_critica_mutable']}")
+    honestidad = reporte["evaluacion_honestidad_sir"]
+    flujo = reporte["indicadores_de_flujo"]
+    print(f"Total unidades analizadas  : {resumen['total_unidades_analizadas']}")
+    print(f"Unidades mapeadas a caps   : {resumen['unidades_mapeadas_exitosamente']}")
+    print(f"Cobertura de Unidades      : {resumen['cobertura_unidades']}")
+    print(f"Confianza Promedio (SIR)   : {honestidad['confianza_promedio_general']}")
+    print(f"Líneas de Código Totales   : {resumen['lineas_codigo_totales']}")
+    print(f"Cobertura Precondiciones   : {flujo['cobertura_precondiciones_gherkin']}")
     print("-" * 50)
     print("Distribución de Roles Semánticos:")
-    for role, count in reporte["distribucion_semántica_roles"].items():
+    for role, count in reporte["distribucion_roles"].items():
         print(f"  - {role:12}: {count}")
     print("=" * 50)
 

@@ -116,13 +116,19 @@ pip install -r requirements.txt
 ### 2. Ejecutar Ejemplo de Demostración
 El repositorio incluye un archivo de muestra en [`ejemplos/servicio_autenticacion.py`](ejemplos/servicio_autenticacion.py).
 
-> **Sobre este ejemplo**: Es un módulo sintético diseñado a propósito para ilustrar cómo el analizador reacciona ante diferentes estructuras sintácticas (una guarda con `raise`, una mutación de diccionario en `self`, una llamada a `.write()` simulada y un retorno booleano). Permite verificar el pipeline de principio a fin de manera controlada y en menos de dos segundos.
+> **Sobre este ejemplo sintético**: Es un módulo diseñado como caso de prueba representativo para ilustrar cómo el analizador reacciona ante diferentes estructuras sintácticas (guardas con `raise`/`assert`, mutaciones de atributos en `self`, persistencia simulada mediante `.write()` y retornos de valor). Para permitir tanto el análisis estático como su **ejecución real en tiempo de ejecución**, el archivo incorpora implementaciones mínimas (*mocks*) de almacenamiento y mensajería.
 
+**Comprobación de ejecución real en runtime:**
+```bash
+python ejemplos/servicio_autenticacion.py
+```
+
+**Análisis estático con el orquestador SIR-FE:**
 ```bash
 python orquestador.py ejemplos/servicio_autenticacion.py --output-dir salida_demo
 ```
 
-**Salida en consola:**
+**Salida real en consola:**
 ```text
 ============================================================
 INICIANDO PIPELINE SIR-FE
@@ -131,7 +137,7 @@ Configuración: config_analizador.json
 ============================================================
 
 [Paso 1/4] Analizando código fuente y abstrayendo AST a IR...
--> Se extrajeron 5 métodos con representaciones semánticas.
+-> Se extrajeron 7 métodos con representaciones semánticas.
 
 [Paso 2/4] Agrupando comportamientos similares (Clustering K-Means)...
 -> Se generaron 4 clusters basados en firmas semánticas.
@@ -150,15 +156,15 @@ Configuración: config_analizador.json
 ==================================================
 REPORTE CONSOLIDADO DE VALIDACIÓN (SIR-FE)
 ==================================================
-Total unidades analizadas  : 5
-Unidades mapeadas a caps   : 5
+Total unidades analizadas  : 7
+Unidades mapeadas a caps   : 7
 Cobertura de Unidades      : 100.00%
-Confianza Promedio (SIR)   : 0.86
-Líneas de Código Totales   : 34
-Cobertura Precondiciones   : 80.00%
+Confianza Promedio (SIR)   : 0.87
+Líneas de Código Totales   : 40
+Cobertura Precondiciones   : 57.14%
 --------------------------------------------------
 Distribución de Roles Semánticos:
-  - EXTRACTOR   : 5
+  - EXTRACTOR   : 7
   - VALIDATOR   : 4
   - PERSISTER   : 1
   - TRANSFORMER : 1
@@ -187,6 +193,24 @@ python -m unittest discover -s tests -p "test_*.py" -v
 * [`tests/test_sintesis_negocio.py`](tests/test_sintesis_negocio.py): Valida la generación de estructuras `FunctionalCapability`, campos Gherkin (`Dado`, `Cuando`, `Entonces`, `Y`) y metadatos de trazabilidad.
 * [`tests/test_validacion.py`](tests/test_validacion.py): Evalúa el cómputo de métricas metodológicas internas.
 * [`tests/test_pipeline_integracion.py`](tests/test_pipeline_integracion.py): Ejecuta el flujo completo de las cuatro etapas en memoria de principio a fin.
+
+**Resultado de ejecución comprobado:**
+```text
+test_extraccion_roles_heuristicos (test_analizador.TestUniversalIRAnalyzer) ... ok
+test_filtro_por_metodo (test_analizador.TestUniversalIRAnalyzer) ... ok
+test_clusterizar_lista_vacia (test_clustering.TestClusteringIR) ... ok
+test_clusterizar_retorna_clusters (test_clustering.TestClusteringIR) ... ok
+test_feature_extractor_dimensiones (test_clustering.TestClusteringIR) ... ok
+test_pipeline_completo_en_memoria (test_pipeline_integracion.TestPipelineIntegracion) ... ok
+test_generar_especificacion_gherkin (test_sintesis_negocio.TestSintesisNegocio) ... ok
+test_validar_metodologia_lista_vacia (test_validacion.TestValidacionMetodologia) ... ok
+test_validar_metodologia_metricas (test_validacion.TestValidacionMetodologia) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.486s
+
+OK
+```
 
 ---
 

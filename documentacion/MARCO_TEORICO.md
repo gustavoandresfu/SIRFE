@@ -1,61 +1,54 @@
-# Extracción de casos de prueba en formato Gherkin a partir de código fuente de aplicaciones legacy
+# Extracción de especificaciones funcionales en formato Gherkin a partir de código fuente de aplicaciones legacy
 ## Marco Teórico: Metodología SIR-FE
 
 ## 1. Ingeniería Inversa y Mantenimiento de Sistemas Legados
-El mantenimiento de sistemas legados representa uno de los mayores desafíos en la ingeniería de software actual. Según **Parnas (1994)**, el "Software Aging" ocurre debido a la falta de actualización de los requerimientos y la pérdida de conocimiento sobre la arquitectura original.
+El mantenimiento de sistemas legados representa uno de los mayores desafíos en la ingeniería de software actual. Según **Parnas (1994)**, el envejecimiento del software ocurre con frecuencia debido a la degradación de la documentación de requerimientos y la pérdida del conocimiento sobre la arquitectura original.
 
 *   **Ingeniería Inversa:** Proceso de análisis de un sistema para identificar sus componentes y sus interrelaciones, creando representaciones en un nivel de abstracción más alto (Chikofsky & Cross).
-*   **Recuperación de Conceptos (Concept Location):** Técnica para identificar qué partes del código fuente implementan un concepto específico del dominio de negocio.
+*   **Recuperación de Conceptos (Concept Location):** Técnica orientada a identificar qué fragmentos del código fuente implementan un concepto específico del dominio de negocio.
 
 ## 2. Análisis Estático y Abstracción Sintáctica
-La base técnica de SIR-FE reside en el análisis estático de código, que permite examinar el comportamiento del software sin ejecutarlo.
+La base técnica de SIR-FE reside en el análisis estático de código, que permite examinar propiedades del software sin necesidad de ejecutarlo en un entorno operativo completo.
 
-*   **Abstract Syntax Tree (AST):** Una representación jerárquica de la estructura sintáctica del código fuente. El AST permite una navegación estructural que trasciende la simple lectura de texto, facilitando la identificación de patrones lógicos como estructuras de control (`If`, `For`), llamadas a funciones y retornos de datos.
-*   **Análisis de Flujo de Datos:** El estudio de cómo los valores se mueven a través del programa. SIR-FE utiliza esta técnica para determinar la naturaleza de un método (ej. si produce efectos colaterales o si es una función pura de extracción).
+*   **Abstract Syntax Tree (AST):** Una representación jerárquica de la estructura sintáctica del código fuente. El AST permite navegar la estructura lógica del programa, facilitando la identificación de estructuras de control (`If`, `For`), llamadas a funciones, excepciones y retornos de datos.
+*   **Inspección Intraprocedural de Efectos:** Examen localizado de las operaciones de un método para inferir su perfil de ejecución (por ejemplo, si altera atributos del objeto o si realiza operaciones de solo lectura).
 
 ## 3. Representación Intermedia Semántica (SIR)
-La metodología propone una **Capa Intermedia (IR)** para cerrar la "Brecha Semántica" (*Semantic Gap*) entre las instrucciones de bajo nivel y la lógica de negocio.
+La metodología propone una **Capa Intermedia (IR)** preliminar para reducir la brecha semántica entre las instrucciones de bajo nivel y la descripción funcional.
 
-### 3.1. Taxonomía de Roles Funcionales (Estructurales)
-SIR-FE clasifica cada método del sistema según su intención lógica predominante, utilizando heurísticas basadas en la estructura del AST:
+### 3.1. Taxonomía de Roles Funcionales Heurísticos
+SIR-FE clasifica cada método analizado según patrones sintácticos detectados en el AST:
 
-| Rol | Definición Técnica | Heurística en el AST | Intención Funcional (Negocio) |
+| Rol | Definición Técnica | Heurística en el AST | Intención Funcional Asociada |
 | :--- | :--- | :--- | :--- |
-| **GUARD** | Lógica de control de precondiciones. | Presencia de nodos `Raise`, `Assert` o retornos tempranos condicionales. | Validación de reglas de negocio y seguridad. |
-| **PERSISTER** | Operación orientada a efectos colaterales. | Ausencia de valor de retorno (`Return`) combinado con lógica de control o llamadas a servicios externos. | Persistencia de datos o cambio de estado en el sistema. |
-| **TRANSFORMER** | Operación de procesamiento y cálculo. | Presencia de valor de retorno y lógica de control interna (`If`, `For`, `While`). | Aplicación de algoritmos, cálculos o transformación de entidades. |
-| **EXTRACTOR** | Operación de recuperación simple. | Presencia de valor de retorno con baja complejidad algorítmica (acceso directo). | Consulta de información o recuperación de atributos. |
+| **VALIDATOR / GUARD** | Lógica de control de precondiciones. | Presencia de nodos `Raise`, `Assert` o retornos condicionales tempranos de corte. | Validación de reglas de consistencia y seguridad. |
+| **PERSISTER** | Operación orientada a efectos de almacenamiento. | Invocación de métodos reconocidos como mutables (`write`, `create`, `update`, `save`). | Persistencia de datos o alteración de estado persistente. |
+| **TRANSFORMER** | Operación de procesamiento algorítmico. | Presencia de valor de retorno combinado con estructuras de iteración (`For`, `While`) o múltiples asignaciones. | Aplicación de cálculos o transformación de estructuras. |
+| **EXTRACTOR** | Operación de consulta y recuperación. | Presencia de sentencias de retorno de valores sin bucles ni lógica compleja. | Lectura de atributos o consulta de datos. |
 
 ### 3.2. Dimensiones Semánticas Complementarias
-Para enriquecer el perfil del método, se añaden tres dimensiones adicionales que permiten el clustering preciso:
+Para enriquecer el vector de características del método, se extraen dimensiones auxiliares:
 
-*   **Efecto Sistémico (Side-Effects):**
-    *   **MUTABLE:** El método altera el estado global o de base de datos (ej. `update`, `delete`).
-    *   **STABLE:** El método es de "solo lectura", garantizando la integridad del estado sistémico.
-    *   **SIGNAL:** El método dispara eventos o notificaciones a otros sistemas (ej. `send_email`, `emit_log`).
-*   **Complejidad Operacional:**
-    *   **SEQUENTIAL:** Flujo lineal sin bifurcaciones.
-    *   **BRANCHING:** Presencia de lógica condicional moderada.
-    *   **COMPLEX_BRANCHING:** Algoritmos con múltiples ramificaciones o anidamiento profundo.
-*   **Contexto de Dominio:** Identificación automática de la entidad de negocio afectada mediante el análisis de la firma del método y la clase contenedora (ej. `STORAGE`, `IDENTITY`, `UI_CONFIG`).
+*   **Efectos de Estado Detectados:**
+    *   **PERSISTENT:** Invocación de operaciones de escritura/almacenamiento.
+    *   **MEMORY:** Asignación a atributos de instancia (`self.*`).
+    *   **EXTERNAL:** Invocación de métodos de emisión de señales o mensajería (`send`, `trigger`, `emit`, `rpc`).
+*   **Inferencia Contextual:** Asociación preliminar a un dominio funcional mediante coincidencia de palabras clave configurables en los nombres de clases y funciones (`IDENTITY`, `STORAGE`, `UI_CONFIG`).
 
 ## 4. Minería de Software y Clustering de Comportamiento
-La metodología emplea técnicas de **Minería de Repositorios de Software (MSR)** para tratar el código como un conjunto de datos estructurados.
+*   **Vectorización de Comportamiento:** Transformación de las variables cualitativas y categóricas de la SIR en matrices numéricas ponderadas por pesos de confianza heurísticos.
+*   **Aprendizaje No Supervisado:** Aplicación de algoritmos de agrupamiento como **K-Means**, **Agglomerative Clustering** o **DBSCAN** para particionar los métodos según su proximidad en el espacio de características.
+*   **Hipótesis de Trabajo:** Los métodos que comparten perfiles sintácticos similares pueden agruparse como componentes colaborativos de una misma capacidad funcional preliminar.
 
-*   **Vectorización de Comportamiento:** Uso de técnicas como *One-Hot Encoding* para transformar la clasificación cualitativa de la IR en vectores numéricos.
-*   **Aprendizaje No Supervisado (Clustering):** Aplicación del algoritmo **K-Means** para agrupar métodos que comparten firmas semánticas similares. La hipótesis subyacente es que métodos con perfiles semánticos idénticos pertenecen a la misma capacidad funcional, independientemente de su ubicación física en el sistema.
+## 5. El Rol de Gherkin: Candidatos para Pruebas de Caracterización
 
-## 6. Dualidad de Gherkin: Especificaciones Ejecutables y Pruebas de Caracterización
+La metodología investiga el formato Gherkin como mecanismo de articulación en la ingeniería inversa:
 
-Una de las contribuciones fundamentales de esta metodología es el uso de Gherkin como puente entre dos conceptos tradicionalmente separados en la ingeniería de software:
+### 5.1. Formato Gherkin como Lenguaje Declarativo Puente
+En BDD (*Behavior-Driven Development*), los escenarios Gherkin estructuran el comportamiento mediante cláusulas `Dado`, `Cuando`, `Entonces`. SIR-FE utiliza esta estructura como plantilla declarativa para sintetizar las precondiciones, acciones y postcondiciones identificadas en cada cluster de métodos.
 
-### 6.1. Gherkin como Especificación Ejecutable
-En el marco de BDD (*Behavior-Driven Development*), los escenarios Gherkin no son meros casos de prueba; son **especificaciones ejecutables**. Representan el comportamiento deseado del sistema en un lenguaje natural estructurado (Ubiquitous Language) que es comprensible tanto para los desarrolladores como para los expertos de negocio. En la metodología SIR-FE, el proceso de extracción recupera la especificación funcional que ha quedado "atrapada" en el código legacy.
+### 5.2. Escenarios Candidatos para Pruebas de Caracterización (Characterization Tests)
+Según **Michael Feathers (2004)**, las pruebas de caracterización tienen como objetivo registrar y documentar el comportamiento actual de un sistema para protegerlo durante procesos de modernización.
 
-### 6.2. Pruebas de Caracterización (Characterization Tests)
-Dado que en los sistemas legados el código fuente suele ser la única "fuente de verdad" actualizada, los artefactos generados por SIR-FE actúan como **Pruebas de Caracterización**, según la definición de **Michael Feathers (2004)**. 
-
-*   **Objetivo:** El propósito de estas pruebas no es validar la corrección lógica (si el código es "correcto" según un documento de diseño), sino **caracterizar y documentar lo que el sistema hace actualmente**.
-*   **Valor en la Reingeniería:** Al automatizar esta caracterización en formato Gherkin, se crea una red de seguridad que permite realizar procesos de refactorización o migración tecnológica asegurando la preservación del comportamiento funcional histórico.
-
-De este modo, los resultados de SIR-FE cumplen una doble función: sirven como **documentación funcional recuperada** (Especificación) y como **suite de regresión automatizada** (Caso de Prueba).
+*   **Naturaleza de los Escenarios Generados:** Los artefactos sintetizados por SIR-FE son **escenarios candidatos de caracterización**, concebidos como borradores estructurados que describen el flujo detectado.
+*   **Distinción con Pruebas Ejecutables:** A diferencia de una suite de pruebas de regresión terminada, estos escenarios **no incluyen step definitions ejecutables ni aserciones de tiempo de ejecución**. Su función es servir como especificación funcional preliminar recuperada y como punto de partida para que los ingenieros de calidad implementen posteriormente pruebas ejecutables con herramientas como *Behave* o *pytest-bdd*.

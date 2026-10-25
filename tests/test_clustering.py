@@ -38,9 +38,9 @@ class TestClusteringIR(unittest.TestCase):
     def test_clusterizar_retorna_clusters(self):
         units = [
             self._crear_unidad("val1", "VALIDATOR", "IDENTITY"),
-            self._crear_unidad("val2", "VALIDATOR", "IDENTITY"),
+            self._crear_unidad("trans1", "TRANSFORMER", "UI_CONFIG", memory=True),
             self._crear_unidad("save1", "PERSISTER", "STORAGE", persistent=True),
-            self._crear_unidad("save2", "PERSISTER", "STORAGE", persistent=True),
+            self._crear_unidad("ext1", "EXTRACTOR", "GENERIC"),
         ]
         clusters = clusterizar(units)
         self.assertIsInstance(clusters, list)

@@ -1,94 +1,128 @@
 # SIR-FE: Semantic Intermediate Representation for Functional Extraction
-### *Ingeniería Inversa Asistida por AST, Representación Semántica y Clustering de Comportamiento*
 
-![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
-![Build Status](https://img.shields.io/badge/Tests-9%20Passing-success?logo=checkmarx&logoColor=white)
-![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2F%20Pipeline-orange)
-![Machine Learning](https://img.shields.io/badge/ML-K--Means%20%7C%20DBSCAN%20%7C%20Agglomerative-blueviolet)
-![Methodology](https://img.shields.io/badge/Research-Software%20Reengineering-informational)
-![BDD](https://img.shields.io/badge/Output-Gherkin%20%2F%20User%20Stories-green)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Status](https://img.shields.io/badge/status-research--prototype-yellow.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-9%20passed-success.svg)](tests/)
 
----
-
-## 📌 Resumen Ejecutivo
-
-**SIR-FE** (*Semantic Intermediate Representation for Functional Extraction*) es un proyecto de **investigación aplicada e ingeniería de software avanzada** diseñado para reducir la brecha semántica entre el código fuente heredado (*legacy*) y las especificaciones funcionales de negocio.
-
-A través de un pipeline automatizado de cuatro etapas, la herramienta:
-1. Inspecciona estáticamente el **Árbol de Sintaxis Abstracta (AST)** de aplicaciones Python.
-2. Construye una **Representación Intermedia Semántica (SIR)** desacoplada del lenguaje.
-3. Agrupa unidades de código afines mediante **algoritmos de aprendizaje no supervisado (Clustering)** basados en sus firmas de comportamiento.
-4. Sintetiza capacidades de negocio y **escenarios de prueba en formato Gherkin (BDD)** con trazabilidad técnica bidireccional código-requisito.
-
-> **Propósito del Repositorio**: Este proyecto sirve como demostración técnica de competencias en **análisis estático de código, diseño de compiladores/IRs, aprendizaje automático aplicado a software (ML4SE), patrones de arquitectura limpia y reingeniería de sistemas**.
+> **Aviso de alcance**: **SIR-FE es un prototipo experimental de investigación académica (Proof of Concept - PoC)** desarrollado en el contexto de una tesis de grado en Reingeniería de Software. **No es una herramienta lista para producción** ni un generador automático de suites de pruebas ejecutables.
 
 ---
 
-## 💡 Competencias Técnicas Demostradas
+## 📌 Contexto del Proyecto
 
-* **Análisis Estático de Código y Compiladores**: Uso avanzado del módulo nativo `ast` de Python, patrones *Visitor/Walker*, análisis intraprocedural de flujo de control, detección de precondiciones y efectos colaterales (mutaciones de memoria, persistencia y eventos).
-* **Machine Learning & Feature Engineering**: Transformación de grafos sintácticos en matrices multidimensionales (*One-Hot*, *Multi-Hot* y ponderación por *Confidence Scores*). Implementación de estrategias intercambiables de agrupamiento (*K-Means*, *Agglomerative Clustering*, *DBSCAN*).
-* **Arquitectura de Software y Clean Code**: Diseño modular fuertemente tipado (`dataclasses`, `typing`), separación estricta de responsabilidades, extensibilidad mediante perfiles JSON y ejecución en memoria (*zero side-effects*).
-* **Metodologías Ágiles y Calidad de Software (BDD)**: Reingeniería inversa orientada a comportamiento (*Behavior-Driven Development*), generación de historias de usuario y trazabilidad granular a nivel de archivo y número de línea.
-* **Rigor Metodológico y Auditoría**: Módulo de telemetría y KPIs que evalúa cuantitativamente la cobertura de unidades, la densidad de roles y el índice de honestidad heurística.
+El proyecto explora la viabilidad de una metodología asistida para analizar código fuente heredado (*legacy*) en Python y extraer, mediante análisis estático y agrupamiento algorítmico, candidatos estructurados de especificaciones funcionales en formato Gherkin.
+
+El objetivo central de la investigación es evaluar si una **Representación Intermedia Semántica (SIR)** basada en roles y patrones sintácticos puede servir como punto de partida útil para que un auditor o analista de software documente y comprenda sistemas legados con menor esfuerzo cognitivo.
 
 ---
 
-## 🏗️ Arquitectura del Pipeline
+## ⚙️ ¿Qué hace actualmente el prototipo?
 
-El sistema opera bajo una arquitectura de flujo unidireccional (*Pipes & Filters*) con cuatro fases claramente diferenciadas:
+El sistema implementa un pipeline de cuatro pasos secuenciales:
 
-```mermaid
-flowchart TD
-    A[Código Fuente Legacy .py] -->|ast.NodeVisitor| B[Fase 1: Abstracción Sintáctica y Semántica]
-    B -->|SemanticUnit / SIR| C[Fase 2: Vectorización y Clustering de ADN]
-    C -->|FeatureExtractor + K-Means / DBSCAN| D[Fase 3: Síntesis Funcional de Negocio]
-    D -->|Plantillas Parametrizadas| E[Especificación Funcional Gherkin]
-    B --> F[Fase 4: Auditoría y Métricas Metodológicas]
-    D --> F
-    F -->|Cálculo de KPIs| G[Reporte Cuantitativo de Validación]
+```
+Código Python (.py) ──> [1. AST a SIR] ──> [2. Vectorización y Clustering] ──> [3. Síntesis Textual] ──> [4. Telemetría]
 ```
 
-### Detalle de Fases:
-1. **Abstracción Sintáctica a SIR (`analizar_codigo_legacy.py`)**: Recorre clases y métodos abstrayendo llamadas, variables de retorno, excepciones capturadas/lanzadas y sentencias condicionales (`If`/`Assert`) para inferir roles como `VALIDATOR`, `PERSISTER`, `TRANSFORMER` o `EXTRACTOR`.
-2. **Representación y Agrupamiento (`clustering_ir.py`)**: El `FeatureExtractor` proyecta las unidades semánticas en un espacio vectorial multidimensional considerando roles, dominios, llamadas de red/base de datos y mutaciones de estado, agrupando métodos complementarios.
-3. **Síntesis Funcional BDD (`generar_json_negocio.py`)**: Agrega las propiedades semánticas del cluster para sintetizar una Historia de Usuario estandarizada y un escenario Gherkin (`Dado / Cuando / Entonces / Y`) con respaldo técnico explícito.
-4. **Validación y Métricas (`validar_metodologia.py`)**: Calcula índices de cobertura de código, confianza heurística promedio y niveles de precondiciones para auditoría técnica.
+1. **Análisis Sintáctico y Extracción de IR (`analizar_codigo_legacy.py`)**:
+   * Recorre el Árbol de Sintaxis Abstracta (AST) con `ast.NodeVisitor`.
+   * Extrae atributos locales de funciones y métodos: nombres de argumentos, retornos, excepciones lanzadas/capturadas, condiciones en sentencias `If` y `Assert`, y llamadas a métodos.
+   * Asigna roles heurísticos preliminares (`VALIDATOR`, `PERSISTER`, `EXTRACTOR`, `TRANSFORMER`) según patrones sintácticos predefinidos.
+2. **Vectorización y Agrupamiento (`clustering_ir.py`)**:
+   * Convierte los atributos extraídos en vectores numéricos mediante codificación *one-hot* / *multi-hot* y pesos asignados por configuración.
+   * Agrupa métodos con firmas de comportamiento similares utilizando algoritmos de clustering no supervisado (`K-Means`, `Agglomerative`, `DBSCAN`) de `scikit-learn`.
+3. **Síntesis Funcional Preliminar (`generar_json_negocio.py`)**:
+   * Ensambla plantillas textuales declarativas con formato de Historia de Usuario y escenarios tipo Gherkin (`Dado / Cuando / Entonces / Y`) agregando las acciones, precondiciones y postcondiciones detectadas en cada cluster.
+4. **Métricas Internas de Auditoría (`validar_metodologia.py`)**:
+   * Calcula indicadores cuantitativos simples sobre los métodos analizados, líneas de código cubiertas y estadísticas de las heurísticas ejecutadas.
 
 ---
 
-## 🔬 Rigor Metodológico: Heurísticas vs. Validación Experimental
+## 📦 Artefactos que produce
 
-Como proyecto de investigación y buena práctica de ingeniería sénior, el proyecto define explícitamente la frontera entre lo que se deduce mediante **análisis estático heurístico** y lo que requiere **validación empírica experimental**:
+Al ejecutar el pipeline, se generan cuatro archivos JSON estructurados:
 
-| Dimensión Técnica | Implementado por Heurísticas Estáticas (AST) | Validación Empírica & Trabajo Futuro (Roadmap) |
-| :--- | :--- | :--- |
-| **Clasificación de Roles** | Asignación basada en patrones sintácticos (`raise`/`assert` $\to$ `VALIDATOR`; llamadas CRUD $\to$ `PERSISTER`; bucles $\to$ `TRANSFORMER`). | Medición empírica de **Precisión, Recall y F1-Score** frente a un *Ground Truth* etiquetado por ingenieros de software. |
-| **Inferencia de Invariantes** | Extracción textual de condiciones de guardia en ramas condicionales tempranas y sentencias `assert`. | **Análisis dinámico y ejecución simbólica** para verificar la completitud y satisfacibilidad de las precondiciones en runtime. |
-| **Contexto de Dominio** | Concordancia léxica en diccionarios configurables (`config_analizador.json`) sobre identificadores de métodos y clases. | Integración con **Modelos de Lenguaje (LLMs / Code Embeddings)** para desambiguar dominios en nomenclaturas no estandarizadas. |
-| **Cohesión de Clusters** | Vectorización matricial y agrupamiento por distancia euclidiana o densidad. | **Validación de calidad intrínseca** (Silhouette score) y contraste contra la arquitectura modular documentada del sistema. |
-| **Escenarios Gherkin** | Síntesis generativa paramétrica agregando acciones, estados y excepciones de cada cluster. | **Pruebas de usuario con expertos de dominio** (legibilidad y valor funcional) y **ejecución dinámica de los tests** (*Behave* / *pytest-bdd*). |
-| **Profundidad de Análisis** | Análisis estático intraprocedural con trazabilidad de llamadas directas. | **Análisis interprocedural y análisis de alias (Points-to analysis)** para propagación de flujo entre capas y microservicios. |
+| Archivo Generado | Contenido y Propósito |
+| :--- | :--- |
+| `representacion_intermedia_semantica.json` | Lista detallada de cada método analizado con su trazabilidad (archivo, líneas), roles asignados, precondiciones textuales, entradas, salidas y efectos de estado detectados. |
+| `clusters_ir.json` | Agrupamiento de las unidades semánticas organizadas por identificador de cluster numérico. |
+| `especificacion_funcional.json` | Especificación funcional preliminar con historias de usuario y escenarios Gherkin generados a partir de plantillas parametrizadas. |
+| `reporte_validacion_tesis.json` | Reporte cuantitativo con el total de métodos procesados, líneas analizadas, porcentaje de métodos vinculados a clusters y promedios de las puntuaciones heurísticas. |
 
 ---
 
-## ⚡ Guía de Inicio Rápido (Quickstart)
+## 🚫 ¿Qué NO resuelve todavía el proyecto? (Límites Técnicos)
 
-### 1. Clonar el Repositorio e Instalar Dependencias
+Para una evaluación técnica honesta, es importante señalar los límites actuales del prototipo:
+
+* **No genera pruebas automatizadas ejecutables**: Los escenarios Gherkin generados son plantillas textuales descriptivas. No contienen código ejecutable (*step definitions*) ni interactúan con motores como *Behave* o *pytest-bdd*. Para convertirlos en pruebas reales, un ingeniero debe programar los pasos y aserciones.
+* **No comprende la semántica profunda del negocio**: El análisis se basa estrictamente en la sintaxis del código y en coincidencia de cadenas de texto (nombres de funciones, llamadas a `.write()`, verbos comunes). Si el código usa identificadores genéricos o no estándar, la inferencia semántica se degrada a valores por defecto (`GENERIC`).
+* **Análisis estrictamente intraprocedural**: Cada método se analiza de forma aislada. El prototipo no construye grafos de llamadas entre métodos (*call graphs*), no analiza flujo de datos entre módulos (*data-flow*) ni resuelve alias de variables o herencias complejas.
+* **El clustering es sintáctico, no conceptual**: El algoritmo agrupa métodos basándose en la similitud de sus vectores de características sintácticas; no garantiza que los métodos agrupados correspondan a un mismo caso de uso o proceso de negocio real.
+* **Exclusivo para Python 3**: La extracción depende directamente del módulo nativo `ast` de Python, por lo que no analiza aplicaciones escritas en otros lenguajes.
+
+---
+
+## 🔬 Distinción Metodológica: Resultados Medidos, Heurísticas e Hipótesis
+
+Para evitar afirmaciones desmedidas sobre validación o novedad, se distinguen explícitamente tres niveles en el proyecto:
+
+### 1. Resultados Medidos (Métricas empíricas del analizador)
+* **Cantidad de unidades procesadas**: Recuento de métodos y funciones exitosamente parseados por el AST.
+* **Volumen de código analizado**: Líneas de código (LoC) comprendidas entre el inicio y fin de cada nodo analizado.
+* **Cobertura sintáctica de asignación**: Porcentaje de métodos del código fuente analizado que fueron incorporados en algún cluster de la especificación final.
+* **Tasa de precondiciones detectadas**: Proporción de métodos que contienen sentencias `If` con cortes o `Assert`.
+
+### 2. Heurísticas Implementadas (Reglas prefijadas en código)
+* **Puntuaciones de "Confianza" (`confidence`)**: Los valores numéricos (ej. `0.95` para persistencia al detectar `.write()`, `0.80` para validadores con `raise`, `0.50` por defecto) **son pesos asignados por reglas fijas en el código**, no probabilidades estadísticas ni precisiones calculadas empíricamente.
+* **Detección de roles por subcadenas**: Identificación de verbos y palabras clave mediante expresiones regulares y diccionarios estáticos definidos en `config_analizador.json`.
+* **Asignación de dominio funcional**: Clasificación heurística basada en palabras clave en el nombre del método o clase (`identity`, `storage`, `ui_config`).
+
+### 3. Hipótesis de Investigación (Pendientes de validación empírica formal)
+* **Hipótesis 1**: Una representación intermedia estructurada (SIR) reduce el tiempo que requiere un desarrollador para comprender la lógica de métodos legados desconocidos.
+* **Hipótesis 2**: Las firmas de comportamiento sintáctico permiten agrupar métodos de forma coherente con la arquitectura funcional del sistema.
+* **Hipótesis 3**: Las plantillas Gherkin sintetizadas sirven como un borrador útil para que analistas y equipos de QA diseñen especificaciones funcionales formales.
+
+> *Nota metodológica: La validación formal de estas hipótesis requiere futuros estudios empíricos con desarrolladores humanos y benchmarks anotados manualmente con ground truth.*
+
+---
+
+## 🚀 Instalación y Ejemplo Reproducible
+
+### Requisitos Previos
+* **Python 3.10** o superior.
+* `git` y `pip`.
+
+### 1. Clonar e Instalar Entorno
 ```bash
-git clone https://github.com/tu-usuario/SIRFE.git
+# Clonar el repositorio
+git clone https://github.com/gustavoandresfu/SIRFE.git
 cd SIRFE
+
+# Crear y activar entorno virtual
+# En Linux/macOS:
+python3 -m venv venv
+source venv/bin/activate
+
+# En Windows (PowerShell):
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Instalar dependencias requeridas (numpy, scikit-learn, scipy)
 pip install -r requirements.txt
 ```
 
-### 2. Ejecutar Ejemplo Mínimo Reproducible
-El repositorio incluye un caso de estudio autocontenido ([`ejemplos/servicio_autenticacion.py`](file:///c:/Users/gustavo/Dropbox/SIRFE/ejemplos/servicio_autenticacion.py)) que ejemplifica autenticación, gestión de sesión, saneamiento de datos y persistencia:
+### 2. Ejecutar Ejemplo de Demostración
+El repositorio incluye un archivo de muestra en [`ejemplos/servicio_autenticacion.py`](ejemplos/servicio_autenticacion.py).
+
+> **Sobre este ejemplo**: Es un módulo sintético diseñado a propósito para ilustrar cómo el analizador reacciona ante diferentes estructuras sintácticas (una guarda con `raise`, una mutación de diccionario en `self`, una llamada a `.write()` simulada y un retorno booleano). Permite verificar el pipeline de principio a fin de manera controlada y en menos de dos segundos.
 
 ```bash
 python orquestador.py ejemplos/servicio_autenticacion.py --output-dir salida_demo
 ```
 
-**Salida Consolidada en Terminal:**
+**Salida en consola:**
 ```text
 ============================================================
 INICIANDO PIPELINE SIR-FE
@@ -131,71 +165,60 @@ Distribución de Roles Semánticos:
 ==================================================
 ```
 
-### 3. Ejecución Quirúrgica sobre Código Legacy Real
-El pipeline permite analizar módulos legacy reales de forma masiva o granular:
-
+### 3. Ejecución en Memoria (Sin escribir archivos)
+Para inspeccionar un archivo sin generar archivos JSON en disco:
 ```bash
-# Análisis completo de un módulo legacy
-python orquestador.py legacy/trytond/security.py
-
-# Análisis en memoria (sin escribir archivos en disco)
-python orquestador.py legacy/trytond/security.py --no-write
-
-# Análisis focalizado en un único método
-python orquestador.py legacy/trytond/security.py --method check
+python orquestador.py ejemplos/servicio_autenticacion.py --no-write
 ```
 
 ---
 
-## 🧪 Suite de Pruebas Automatizadas
+## 🧪 Suite de Pruebas
 
-El proyecto cuenta con un conjunto integral de pruebas unitarias y de integración implementado sobre `unittest` nativo de Python:
+El repositorio incluye un conjunto de pruebas unitarias y de integración implementado con el framework nativo `unittest`, sin herramientas externas adicionales:
 
 ```bash
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-### Módulos de Prueba:
-| Test Suite | Cobertura Funcional |
-| :--- | :--- |
-| [`test_analizador.py`](file:///c:/Users/gustavo/Dropbox/SIRFE/tests/test_analizador.py) | Parseo de AST, asignación de roles heurísticos, extracción de guards/asserts y detección de mutaciones (`self.*`, CRUD). |
-| [`test_clustering.py`](file:///c:/Users/gustavo/Dropbox/SIRFE/tests/test_clustering.py) | Vectorización mediante `FeatureExtractor`, consistencia dimensional de matrices y algoritmos de agrupamiento. |
-| [`test_sintesis_negocio.py`](file:///c:/Users/gustavo/Dropbox/SIRFE/tests/test_sintesis_negocio.py) | Generación de historias de usuario, escenarios Gherkin (`Dado/Cuando/Entonces`) y trazabilidad técnica. |
-| [`test_validacion.py`](file:///c:/Users/gustavo/Dropbox/SIRFE/tests/test_validacion.py) | Cómputo de KPIs metodológicos, porcentajes de cobertura, promedios de confianza y control de listas vacías. |
-| [`test_pipeline_integracion.py`](file:///c:/Users/gustavo/Dropbox/SIRFE/tests/test_pipeline_integracion.py) | Prueba *end-to-end* que ejecuta los 4 pasos del pipeline en memoria de forma orquestada. |
+### Casos Cubiertos:
+* [`tests/test_analizador.py`](tests/test_analizador.py): Verifica la extracción de nodos AST, asignación de roles heurísticos, detección de guardas condicionales y cambios de estado en memoria y persistencia.
+* [`tests/test_clustering.py`](tests/test_clustering.py): Comprueba la consistencia del vectorizador `FeatureExtractor` y el comportamiento de los algoritmos de clustering con listas normales y vacías.
+* [`tests/test_sintesis_negocio.py`](tests/test_sintesis_negocio.py): Valida la generación de estructuras `FunctionalCapability`, campos Gherkin (`Dado`, `Cuando`, `Entonces`, `Y`) y metadatos de trazabilidad.
+* [`tests/test_validacion.py`](tests/test_validacion.py): Evalúa el cómputo de métricas metodológicas internas.
+* [`tests/test_pipeline_integracion.py`](tests/test_pipeline_integracion.py): Ejecuta el flujo completo de las cuatro etapas en memoria de principio a fin.
 
 ---
 
-## 📂 Organización del Proyecto
+## 📂 Estructura del Repositorio
 
 ```text
 SIRFE/
-├── orquestador.py                  # CLI principal y coordinador del pipeline
-├── analizar_codigo_legacy.py       # Extractor de AST y generador de la SIR
-├── clustering_ir.py                # Extracción de características y algoritmos ML
-├── generar_json_negocio.py         # Motor de síntesis funcional y generación BDD
-├── validar_metodologia.py          # Auditoría, KPIs y cálculo de métricas de tesis
-├── modelos.py                      # Entidades del dominio fuertemente tipadas (Dataclasses)
-├── config_analizador.json          # Perfiles léxicos y configuración de heurísticas
-├── requirements.txt                # Dependencias del entorno (scikit-learn, numpy, scipy)
+├── orquestador.py                  # CLI y coordinador del pipeline
+├── analizar_codigo_legacy.py       # Extractor estático de AST a SIR
+├── clustering_ir.py                # Vectorización de características y clustering
+├── generar_json_negocio.py         # Generación de historias y plantillas Gherkin
+├── validar_metodologia.py          # Cálculo de métricas y telemetría interna
+├── modelos.py                      # Clases de datos tipadas (Dataclasses)
+├── config_analizador.json          # Perfiles de palabras clave y heurísticas
+├── requirements.txt                # Dependencias (numpy, scikit-learn, scipy)
+├── LICENSE                         # Licencia de código abierto MIT
 ├── ejemplos/
-│   └── servicio_autenticacion.py   # Caso de estudio mínimo reproducible
-├── tests/
+│   └── servicio_autenticacion.py   # Módulo sintético de muestra para pruebas
+├── tests/                          # Suite de pruebas unitarias e integración
 │   ├── test_analizador.py
 │   ├── test_clustering.py
+│   ├── test_pipeline_integracion.py
 │   ├── test_sintesis_negocio.py
-│   ├── test_validacion.py
-│   └── test_pipeline_integracion.py
-├── documentacion/                  # Fundamentos metodológicos y estado del arte
-│   ├── ESTADO_DEL_ARTE.md
-│   ├── MARCO_TEORICO.md
-│   └── METODOLOGIA.md
-└── legacy/                         # Directorio destinado a bases de código bajo análisis
-    └── .gitkeep
+│   └── test_validacion.py
+└── documentacion/                  # Documentación teórica y estado del arte
+    ├── ESTADO_DEL_ARTE.md
+    ├── MARCO_TEORICO.md
+    └── METODOLOGIA.md
 ```
 
 ---
 
-## 📄 Licencia y Citación
+## 📄 Licencia
 
-Desarrollado como prototipo de investigación en Reingeniería de Software. Distribuido bajo la licencia [MIT](LICENSE) (o aplicable al proyecto).
+Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.

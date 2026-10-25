@@ -15,7 +15,7 @@ def main():
     parser.add_argument("--method", help="Filtrar análisis por un método específico", default=None)
     parser.add_argument("--config", help="Ruta al archivo de configuración del analizador", default="config_analizador.json")
     parser.add_argument("--output-dir", help="Directorio donde guardar los reportes JSON", default=".")
-    parser.add_argument("--no-write", help="Ejecutar pipeline 100% en memoria sin escribir JSONs", action="store_true")
+    parser.add_argument("--no-write", help="Ejecutar pipeline completamente en memoria sin escribir JSONs", action="store_true")
     args = parser.parse_args()
 
     print("=" * 60)
